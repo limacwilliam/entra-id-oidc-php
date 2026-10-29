@@ -1,1 +1,6 @@
-<?php require __DIR__.'/bootstrap.php'; $_SESSION=[]; session_destroy(); header('Location: /');
+<?php
+
+require __DIR__.'/bootstrap.php';
+$_SESSION = [];
+session_destroy();
+header('Location: /');
