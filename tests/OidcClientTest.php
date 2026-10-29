@@ -44,6 +44,6 @@ final class OidcClientTest extends TestCase
         $jwks = ['keys' => [['kty' => 'RSA','kid' => 'test-key','use' => 'sig','alg' => 'RS256','n' => $b64($detail['rsa']['n']),'e' => $b64($detail['rsa']['e'])]]];
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Invalid nonce');
-        TokenValidator::validate($jwt,$jwks,$config,'wrong-nonce');
+        TokenValidator::validate($jwt, $jwks, $config, 'wrong-nonce');
     }
 }
