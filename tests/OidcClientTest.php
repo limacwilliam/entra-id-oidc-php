@@ -4,7 +4,10 @@ namespace Tests;
 use App\Config; use App\TokenValidator; use Firebase\JWT\JWT; use PHPUnit\Framework\TestCase;
 final class OidcClientTest extends TestCase {
   public function testValidatesTokenSignedByGeneratedTestKey(): void {
-    $key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_RSA,'private_key_bits'=>2048]); openssl_pkey_export($key,$private); $detail=openssl_pkey_get_details($key);
+    $key=openssl_pkey_new(['private_key_type'=>OPENSSL_KEYTYPE_RSA,'private_key_bits'=>2048]);
+    if ($key === false || !openssl_pkey_export($key, $private)) throw new \RuntimeException('Key generation failed');
+    $detail=openssl_pkey_get_details($key);
+    if ($detail === false || !isset($detail['rsa'])) throw new \RuntimeException('Key inspection failed');
     $b64=static fn(string $value): string => rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
     $config=new Config('tenant','client','secret','https://example.com'); $now=time();
     $jwt=JWT::encode(['iss'=>$config->issuer(),'aud'=>'client','nonce'=>'nonce','iat'=>$now,'exp'=>$now+60],$private,'RS256','test-key');
