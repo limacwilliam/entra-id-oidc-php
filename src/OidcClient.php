@@ -1,8 +1,6 @@
 <?php
 declare(strict_types=1);
 namespace App;
-use Firebase\JWT\JWK;
-use Firebase\JWT\JWT;
 
 final class OidcClient {
   public function __construct(private Config $config) {}
@@ -20,11 +18,7 @@ final class OidcClient {
   }
   public function validateIdToken(string $jwt, string $nonce): array {
     $jwks = json_decode($this->get($this->config->jwksUrl()), true, 512, JSON_THROW_ON_ERROR);
-    $claims = (array) JWT::decode($jwt, JWK::parseKeySet($jwks));
-    if (($claims['iss'] ?? '') !== $this->config->issuer()) throw new \RuntimeException('Invalid issuer');
-    $aud = $claims['aud'] ?? ''; if (!(is_string($aud) ? hash_equals($this->config->clientId, $aud) : in_array($this->config->clientId, $aud, true))) throw new \RuntimeException('Invalid audience');
-    if (!hash_equals($nonce, (string)($claims['nonce'] ?? ''))) throw new \RuntimeException('Invalid nonce');
-    return $claims;
+    return TokenValidator::validate($jwt, $jwks, $this->config, $nonce);
   }
   private function post(string $url, array $data): array { $ctx=stream_context_create(['http'=>['method'=>'POST','header'=>'Content-Type: application/x-www-form-urlencoded','content'=>http_build_query($data),'ignore_errors'=>true,'timeout'=>10]]); $body=file_get_contents($url,false,$ctx); if($body===false) throw new \RuntimeException('Token request failed'); $result=json_decode($body,true); if(!isset($result['id_token'])) throw new \RuntimeException('Provider returned no ID token'); return $result; }
   private function get(string $url): string { $body=file_get_contents($url,false,stream_context_create(['http'=>['timeout'=>10]])); if($body===false) throw new \RuntimeException('JWKS request failed'); return $body; }
