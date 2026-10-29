@@ -1,0 +1,1 @@
+<?php require __DIR__.'/bootstrap.php'; try { $claims=(new App\OidcClient(App\Config::fromEnv()))->exchangeAndValidate((string)$_GET['code'],(string)$_GET['state']); session_regenerate_id(true); $_SESSION['user']=['sub'=>$claims['sub'],'name'=>$claims['name']??'User']; header('Location: /'); } catch (Throwable $e) { http_response_code(401); echo 'Sign-in failed.'; }
