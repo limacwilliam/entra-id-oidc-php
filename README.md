@@ -19,9 +19,15 @@ sequenceDiagram
 
 ```bash
 cp .env.example .env
+# Edit .env with development credentials, then export values into your shell.
+set -a
+. ./.env
+set +a
 composer install
 php -S localhost:8080 -t public
 ```
+
+The sample reads environment variables via `getenv`; it does not load `.env` automatically. Never commit `.env` or share real credentials.
 
 Set the redirect URI to `http://localhost:8080/callback.php` only for local development. See [App registration](docs/app-registration.md), [legacy integration](docs/legacy-integration.md), and [security checklist](docs/security-checklist.md).
 

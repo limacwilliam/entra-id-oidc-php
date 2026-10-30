@@ -22,12 +22,12 @@ final class OidcClient
     public function exchangeAndValidate(string $code, string $state): array
     {
         $flow = $_SESSION['oidc'] ?? null;
-        if (!$flow || !hash_equals($flow['state'], $state)) {
+        unset($_SESSION['oidc']);
+        if (!is_array($flow) || !isset($flow['state'], $flow['nonce'], $flow['verifier']) || !is_string($flow['state']) || !is_string($flow['nonce']) || !is_string($flow['verifier']) || !hash_equals($flow['state'], $state)) {
             throw new \RuntimeException('Invalid state');
         }
         $response = $this->post($this->config->tokenUrl(), ['client_id' => $this->config->clientId,'client_secret' => $this->config->clientSecret,'code' => $code,'redirect_uri' => $this->config->appUrl.'/callback.php','grant_type' => 'authorization_code','code_verifier' => $flow['verifier']]);
         $claims = $this->validateIdToken($response['id_token'], $flow['nonce']);
-        unset($_SESSION['oidc']);
         return $claims;
     }
     /** @return array<string, mixed> */
